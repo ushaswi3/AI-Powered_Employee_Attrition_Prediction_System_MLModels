@@ -40,11 +40,11 @@ df = pd.read_csv(
 
 df_encoded = df.copy()
 
-le = LabelEncoder()
-
 for col in df_encoded.columns:
-    if df_encoded[col].dtype == "object":
-        df_encoded[col] = le.fit_transform(df_encoded[col])
+    if not pd.api.types.is_numeric_dtype(df_encoded[col]):
+        df_encoded[col] = LabelEncoder().fit_transform(
+            df_encoded[col].astype(str)
+        )
 
 # =====================================
 # LOAD MODEL
@@ -115,6 +115,13 @@ if predict:
         axis=1
     ).iloc[[employee_id]]
 
+    # Make sure everything is numeric
+    sample = sample.astype(float)
+
+    # TEMP DEBUG
+    st.write("Feature Data Types:")
+    st.write(sample.dtypes)
+
     prediction = rf_model.predict(sample)
 
     probability = rf_model.predict_proba(sample)
@@ -143,9 +150,9 @@ if predict:
 
     st.markdown("---")
 
-    # ==========================
+    # =====================================
     # RISK CATEGORY
-    # ==========================
+    # =====================================
 
     if risk >= 70:
 
